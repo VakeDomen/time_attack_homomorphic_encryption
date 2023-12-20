@@ -60,7 +60,7 @@ fn main() {
             if times[index_of_shift].is_empty() {
                 times[index_of_shift] = vec![];
             }
-            times[index_of_shift].push(duration.unwrap());
+            times[index_of_shift].push(duration);
         }
     }
     
