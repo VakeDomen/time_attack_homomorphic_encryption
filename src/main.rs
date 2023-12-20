@@ -1,4 +1,5 @@
 use std::time::{SystemTime, Duration};
+use cpu_time::ProcessTime;
 use tqdm::{tqdm, Iter};
 use rand::Rng;
 use tfhe::{ConfigBuilder, generate_keys, set_server_key, FheUint8, FheInt64};
@@ -17,7 +18,7 @@ fn main() {
     let mut sources = vec![Vec::new(); 50];
 
     println!("Generating encrypted numbers...");
-    for _ in tqdm(0..100) {
+    for _ in tqdm(0..3) {
         for shift in 0..50 {
             let number: f64 = rng.gen::<f64>() * 127f64;     // 0000...0XXXXXXX
             let number = 128 + number.round() as i64;   // 0000...1XXXXXXX
@@ -43,25 +44,23 @@ fn main() {
 
 
     println!("making zi operations...");
-    for _ in 0..10 {
-        for (index_of_shift, same_shift_nums) in enc_numbers
-            .clone()
-            .into_iter()
-            .enumerate()
-            .tqdm() 
-        {
-            for num in same_shift_nums.into_iter() {
-                let now = SystemTime::now();
-                let _ = num + 1;
-                let duration  = now.elapsed();
+    for (index_of_shift, same_shift_nums) in enc_numbers
+        .clone()
+        .into_iter()
+        .enumerate()
+        .tqdm() 
+    {
+        for num in same_shift_nums.into_iter() {
+            let now = SystemTime::now();
+            let _ = num + 1;
+            // let duration  = now.elapsed();
+            let start = ProcessTime::try_now().expect("Getting process time failed");
 
-
-                if times[index_of_shift].is_empty() {
-                    times[index_of_shift] = vec![];
-                }
-
-                times[index_of_shift].push(duration.unwrap());
+            if times[index_of_shift].is_empty() {
+                times[index_of_shift] = vec![];
             }
+            // duration.unwrap()
+            times[index_of_shift].push(start.try_elapsed().expect("Getting process time failed"));
         }
     }
     
