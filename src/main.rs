@@ -18,17 +18,17 @@ fn main() {
     let mut sources = vec![Vec::new(); 50];
 
     println!("Generating encrypted numbers...");
-    for _ in tqdm(0..3) {
-        for shift in 0..50 {
+    for shift in 0..50 {
+        for _ in tqdm(0..5) {
             let number: f64 = rng.gen::<f64>() * 127f64;     // 0000...0XXXXXXX
             let number = 128 + number.round() as i64;   // 0000...1XXXXXXX
             let number = number << shift;            // 000..1XX..000000
             
             sources[shift].push(number);
+            let now = SystemTime::now();
             enc_numbers[shift].push(FheInt64::encrypt(number, &client_key));
+            println!("EL: {:#?}", now.elapsed().unwrap());
         }
-
-
     }
 
     // let clear_a = 27u8;
@@ -52,15 +52,15 @@ fn main() {
     {
         for num in same_shift_nums.into_iter() {
             let now = SystemTime::now();
+            let start = ProcessTime::try_now().expect("Getting process time failed");
             let _ = num + 1;
             // let duration  = now.elapsed();
-            let start = ProcessTime::try_now().expect("Getting process time failed");
+            let duration = start.try_elapsed().expect("Getting process time failed");
 
             if times[index_of_shift].is_empty() {
                 times[index_of_shift] = vec![];
             }
-            // duration.unwrap()
-            times[index_of_shift].push(start.try_elapsed().expect("Getting process time failed"));
+            times[index_of_shift].push(duration.unwrap());
         }
     }
     
